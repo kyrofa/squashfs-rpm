@@ -1,0 +1,42 @@
+Name:     squashfuse
+Version:  0.1.100
+Release:  1%{?dist}
+Summary:  FUSE filesystem to mount squashfs archives
+
+License:  BSD
+URL:      https://github.com/vasi/squashfuse
+Source0:  https://github.com/vasi/squashfuse/archive/%{version}/%{name}-%{version}.tar.gz
+
+BuildRequires: autoconf, automake, fuse-devel, gcc, libtool, lz4-devel, xz-devel, zlib-devel
+Requires: fuse-libs, libattr, lz4-libs, xz-libs, zlib
+
+%description
+Squashfuse lets you mount SquashFS archives in user-space. It supports almost
+all features of the SquashFS format, yet is still fast and memory-efficient.
+SquashFS is an efficiently compressed, read-only storage format. Support for it
+has been built into the Linux kernel since 2009. It is very common on Live CDs
+and embedded Linux distributions.
+
+
+%prep
+%autosetup
+
+
+%build
+./autogen.sh
+%configure
+%make_build
+
+
+%install
+%make_install
+
+
+%files
+%license LICENSE
+%{_bindir}/*
+%{_mandir}/man1/*
+
+%changelog
+* Mon Sep 25 2017 Kyle Fazzari <kyrofa@ubuntu.com> - 0.1.100-1
+- Initial version of the package
