@@ -7,7 +7,7 @@ License:  BSD
 URL:      https://github.com/vasi/squashfuse
 Source0:  https://github.com/vasi/squashfuse/releases/download/%{version}/%{name}-%{version}.tar.gz
 
-BuildRequires: autoconf, automake, fuse-devel, gcc, libattr-devel, lz4-devel, xz-devel, zlib-devel
+BuildRequires: fuse-devel, gcc, libattr-devel, lz4-devel, xz-devel, zlib-devel
 
 %description
 Squashfuse lets you mount SquashFS archives in user-space. It supports almost
