@@ -7,7 +7,7 @@ License:  BSD
 URL:      https://github.com/vasi/squashfuse
 Source0:  https://github.com/vasi/squashfuse/archive/%{version}.tar.gz
 
-BuildRequires: autoconf, automake, fuse, fuse-devel, gcc, libattr-devel, libtool, libzstd-devel, lz4-devel, squashfs-tools, xz-devel, zlib-devel
+BuildRequires: autoconf, automake, fuse-devel, gcc, libattr-devel, libtool, libzstd-devel, lz4-devel, xz-devel, zlib-devel
 Requires: %{name}-libs%{?_isa} = %{version}-%{release}
 
 %description
@@ -41,34 +41,6 @@ Libraries for running %{name} applications.
 ./autogen.sh
 %configure --disable-static --disable-demo
 %make_build
-
-
-%check
-(
-  src="$(mktemp -d)"
-  mnt="$(mktemp -d)"
-
-  echo "test" > "${src}/file"
-  mksquashfs "$src" "${src}.img"
-
-  ./squashfuse "${src}.img" "$mnt"
-
-  ret=0
-  if [ -f "${mnt}/file" ]; then
-    if [ "$(< "${mnt}/file")" != "test" ]; then
-      echo "Expected ${mnt}/file to contain the string 'test'"
-      ret=1
-    fi
-  else
-    echo "Expected ${mnt}/file to exist"
-    ret=2
-  fi
-
-  fusermount -u "$mnt"
-  rm -r "${src}"
-  rmdir "${mnt}"
-  exit $ret
-)
 
 
 %install
