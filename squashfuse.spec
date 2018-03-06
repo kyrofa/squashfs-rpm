@@ -1,13 +1,14 @@
 Name:     squashfuse
-Version:  0.1.100
+Version:  0.1.102
 Release:  1%{?dist}
 Summary:  FUSE filesystem to mount squashfs archives
 
 License:  BSD
 URL:      https://github.com/vasi/squashfuse
-Source0:  https://github.com/vasi/squashfuse/releases/download/%{version}/%{name}-%{version}.tar.gz
+Source0:  https://github.com/vasi/squashfuse/archive/%{version}.tar.gz
 
-BuildRequires: fuse-devel, gcc, libattr-devel, lz4-devel, xz-devel, zlib-devel
+BuildRequires: autoconf, automake, fuse, fuse-devel, gcc, libattr-devel, libtool, libzstd-devel, lz4-devel, squashfs-tools, xz-devel, zlib-devel
+Requires: %{name}-libs%{?_isa} = %{version}-%{release}
 
 %description
 Squashfuse lets you mount SquashFS archives in user-space. It supports almost
@@ -17,17 +18,62 @@ has been built into the Linux kernel since 2009. It is very common on Live CDs
 and embedded Linux distributions.
 
 
+%package devel
+Summary: Development files for %{name}
+Requires: %{name}-libs%{?_isa} = %{version}-%{release}
+
+%description devel
+Libraries and header files for developing applications that use %{name}.
+
+
+%package libs
+Summary: Libraries for %{name}
+
+%description libs
+Libraries for running %{name} applications.
+
+
 %prep
 %autosetup
 
 
 %build
-%configure
+./autogen.sh
+%configure --disable-static --disable-demo
 %make_build
+
+
+%check
+(
+  src="$(mktemp -d)"
+  mnt="$(mktemp -d)"
+
+  echo "test" > "${src}/file"
+  mksquashfs "$src" "${src}.img"
+
+  ./squashfuse "${src}.img" "$mnt"
+
+  ret=0
+  if [ -f "${mnt}/file" ]; then
+    if [ "$(< "${mnt}/file")" != "test" ]; then
+      echo "Expected ${mnt}/file to contain the string 'test'"
+      ret=1
+    fi
+  else
+    echo "Expected ${mnt}/file to exist"
+    ret=2
+  fi
+
+  fusermount -u "$mnt"
+  rm -r "${src}"
+  rmdir "${mnt}"
+  exit $ret
+)
 
 
 %install
 %make_install
+find %{buildroot} -name '*.la' -print -delete
 
 
 %files
@@ -35,6 +81,21 @@ and embedded Linux distributions.
 %{_bindir}/*
 %{_mandir}/man1/*
 
+%files devel
+%{_includedir}/squashfs_fs.h
+%{_includedir}/squashfuse.h
+%{_libdir}/pkgconfig/squashfuse.pc
+%{_libdir}/*.so
+
+%files libs
+%{_libdir}/*.so.*
+
+%post libs -p /sbin/ldconfig
+%postun libs -p /sbin/ldconfig
+
 %changelog
+* Mon Mar 5 2018 Kyle Fazzari <kyrofa@ubuntu.com> - 0.1.102-1
+- Update to 0.1.102, which also introduces -libs and -devel packages
+
 * Mon Sep 25 2017 Kyle Fazzari <kyrofa@ubuntu.com> - 0.1.100-1
 - Initial version of the package
